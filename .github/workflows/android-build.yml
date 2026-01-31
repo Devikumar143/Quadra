@@ -40,7 +40,7 @@ jobs:
         working-directory: ./mobile-app/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --stacktrace --info || (tail -n 1000 ../../build_logs.txt && exit 1)
+          ./gradlew assembleRelease --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
