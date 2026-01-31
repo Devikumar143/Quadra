@@ -1,0 +1,38 @@
+
+--- USERS ---
+[
+  {
+    "id": "e9af3a4f-241d-43db-ae49-2e15405dec18",
+    "ff_ign": "VTG-KUMAR",
+    "email": "anegondhikumar2@gmail.com",
+    "role": "admin"
+  },
+  {
+    "id": "fc707f1b-5a02-488d-bdc3-72c71b1580a2",
+    "ff_ign": "ALPHA_PLAYER",
+    "email": "player@university.edu",
+    "role": "admin"
+  }
+]
+
+--- TEAMS ---
+[
+  {
+    "id": "2dcaf77e-552d-4586-b3ad-c9b1b5976edd",
+    "name": "Alpha Squad",
+    "leader_id": "e9af3a4f-241d-43db-ae49-2e15405dec18"
+  }
+]
+
+--- REGISTRATIONS ---
+[]
+
+--- TEAM MEMBERS ---
+[
+  {
+    "team_id": "2dcaf77e-552d-4586-b3ad-c9b1b5976edd",
+    "user_id": "e9af3a4f-241d-43db-ae49-2e15405dec18",
+    "role": "leader",
+    "ff_ign": "VTG-KUMAR"
+  }
+]

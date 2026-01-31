@@ -1,0 +1,12 @@
+[
+  {
+    "id": "e9af3a4f-241d-43db-ae49-2e15405dec18",
+    "ff_ign": "VTG-KUMAR",
+    "role": "admin"
+  },
+  {
+    "id": "fc707f1b-5a02-488d-bdc3-72c71b1580a2",
+    "ff_ign": "ALPHA_PLAYER",
+    "role": "admin"
+  }
+]

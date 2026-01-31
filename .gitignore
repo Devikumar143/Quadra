@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+.expo/
+dist/
+build/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Secrets
+brain/secrets.md
+secrets.md
+
+# Expo
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,2203 @@
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Users, Trophy, Flag, Settings, CheckCircle, X, CalendarClock, ShieldAlert, ChevronLeft } from 'lucide-react';
+import axios from 'axios';
+import './index.css';
+
+// Add Google Fonts
+const style = document.createElement('style');
+style.textContent = `@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');`;
+document.head.appendChild(style);
+
+const API_URL = 'http://10.94.87.250:5001/api';
+
+const NavLink = ({ to, icon: Icon, label }) => {
+  const location = useLocation();
+  const isActive = location.pathname === to;
+  return (
+    <Link to={to} className={`nav-item ${isActive ? 'active' : ''}`}>
+      <Icon size={20} /> {label}
+    </Link>
+  );
+};
+
+const Dashboard = () => {
+  const [stats, setStats] = useState({ activeArenas: 0, totalAthletes: 0, liveMatches: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const [tournamentsRes, usersRes] = await Promise.all([
+          axios.get(`${API_URL}/tournaments`),
+          axios.get(`${API_URL}/users/all`, { headers: { 'x-auth-token': token } })
+        ]);
+
+        // Count active arenas (tournaments that are open or active)
+        const activeCount = tournamentsRes.data.filter(t => t.status === 'open' || t.status === 'active').length;
+
+        setStats({
+          activeArenas: activeCount,
+          totalAthletes: usersRes.data.length,
+          liveMatches: 0 // Placeholder until match system is fully real-time
+        });
+      } catch (err) {
+        console.error('Dashboard Stats Error:', err);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  return (
+    <div className="card glass-panel" style={{ animation: 'fadeIn 0.6s ease' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+        <LayoutDashboard color="var(--primary)" size={32} />
+        <h1 className="gradient-text" style={{ margin: 0, fontSize: '2rem' }}>SYSTEM OVERVIEW</h1>
+      </div>
+
+      <div className="stat-grid">
+        {/* Active Arenas */}
+        <div className="card glass-panel stat-card" style={{
+          position: 'relative',
+          overflow: 'hidden',
+          border: '1px solid rgba(212,175,55,0.2)',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+            <div>
+              <span className="text-dim" style={{ fontSize: '12px', letterSpacing: '2px', fontWeight: 'bold' }}>ACTIVE ARENAS</span>
+              <h2 className="gradient-text" style={{ fontSize: '3.5rem', margin: '8px 0', textShadow: '0 0 20px rgba(212,175,55,0.3)' }}>
+                {stats.activeArenas.toString().padStart(2, '0')}
+              </h2>
+            </div>
+            <div style={{
+              padding: '12px',
+              borderRadius: '12px',
+              background: 'rgba(212,175,55,0.1)',
+              border: '1px solid rgba(212,175,55,0.2)'
+            }}>
+              <Trophy color="var(--primary)" size={24} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4CAF50', boxShadow: '0 0 8px #4CAF50' }}></div>
+            <span style={{ fontSize: '12px', color: '#4CAF50', fontWeight: 'bold' }}>OPERATIONAL</span>
+          </div>
+        </div>
+
+        {/* Total Athletes */}
+        <div className="card glass-panel stat-card" style={{
+          position: 'relative',
+          overflow: 'hidden',
+          border: '1px solid rgba(212,175,55,0.2)',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+            <div>
+              <span className="text-dim" style={{ fontSize: '12px', letterSpacing: '2px', fontWeight: 'bold' }}>TOTAL ATHLETES</span>
+              <h2 className="gradient-text" style={{ fontSize: '3.5rem', margin: '8px 0', textShadow: '0 0 20px rgba(212,175,55,0.3)' }}>
+                {stats.totalAthletes.toString().padStart(2, '0')}
+              </h2>
+            </div>
+            <div style={{
+              padding: '12px',
+              borderRadius: '12px',
+              background: 'rgba(212,175,55,0.1)',
+              border: '1px solid rgba(212,175,55,0.2)'
+            }}>
+              <Users color="var(--primary)" size={24} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>REGISTERED PERSONNEL</span>
+          </div>
+        </div>
+
+        {/* Live Matches */}
+        <div className="card glass-panel stat-card" style={{
+          position: 'relative',
+          overflow: 'hidden',
+          border: '1px solid rgba(212,175,55,0.2)',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+            <div>
+              <span className="text-dim" style={{ fontSize: '12px', letterSpacing: '2px', fontWeight: 'bold' }}>LIVE MATCHES</span>
+              <h2 className="gradient-text" style={{ fontSize: '3.5rem', margin: '8px 0', textShadow: '0 0 20px rgba(212,175,55,0.3)' }}>
+                {stats.liveMatches.toString().padStart(2, '0')}
+              </h2>
+            </div>
+            <div style={{
+              padding: '12px',
+              borderRadius: '12px',
+              background: 'rgba(212,175,55,0.1)',
+              border: '1px solid rgba(212,175,55,0.2)'
+            }}>
+              <Flag color="var(--primary)" size={24} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>AWAITING DEPLOYMENT</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Verification = () => {
+  const [activeTab, setActiveTab] = useState('users'); // 'users', 'results', or 'squads'
+  const [unverifiedUsers, setUnverifiedUsers] = useState([]);
+  const [pendingResults, setPendingResults] = useState([]);
+  const [pendingSquads, setPendingSquads] = useState([]);
+  const [disputes, setDisputes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [resolvingId, setResolvingId] = useState(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const [usersRes, resultsRes, squadsRes, disputesRes] = await Promise.all([
+        axios.get(`${API_URL}/users/unverified`, { headers: { 'x-auth-token': token } }),
+        axios.get(`${API_URL}/results/pending`, { headers: { 'x-auth-token': token } }),
+        axios.get(`${API_URL}/tournaments/registrations/pending`, { headers: { 'x-auth-token': token } }),
+        axios.get(`${API_URL}/disputes/all`, { headers: { 'x-auth-token': token } })
+      ]);
+      setUnverifiedUsers(usersRes.data);
+      setPendingResults(resultsRes.data);
+      setPendingSquads(squadsRes.data);
+      setDisputes(disputesRes.data);
+    } catch (err) {
+      console.error('Fetch verification data error:', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const handleVerifyUser = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/users/verify/${id}`, {}, { headers: { 'x-auth-token': token } });
+      setUnverifiedUsers(unverifiedUsers.filter(u => u.id !== id));
+      alert('Athlete Verified Successfully');
+    } catch (err) {
+      alert('Verification Failed: ' + err.message);
+    }
+  };
+
+  const handleVerifyResult = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/results/verify/${id}`, {}, { headers: { 'x-auth-token': token } });
+      setPendingResults(pendingResults.filter(r => r.id !== id));
+      alert('Match Result Verified & Stats Synchronized');
+    } catch (err) {
+      alert('Verification Failed: ' + err.message);
+    }
+  };
+
+  const handleVerifyRegistration = async (id, status) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/tournaments/registrations/${id}/verify`, { status }, { headers: { 'x-auth-token': token } });
+      setPendingSquads(pendingSquads.filter(s => s.id !== id));
+      alert(`Registration ${status.toUpperCase()} Successfully`);
+    } catch (err) {
+      alert('Action Failed: ' + err.message);
+    }
+  };
+
+  const handleRejectResult = async (id) => {
+    if (!window.confirm("ARE YOU SURE YOU WANT TO REJECT THIS COMBAT DATA? IT WILL BE PERMANENTLY DELETED.")) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_URL}/results/reject/${id}`, { headers: { 'x-auth-token': token } });
+      setPendingResults(pendingResults.filter(r => r.id !== id));
+      alert('Combat Data Rejected and Removed');
+    } catch (err) {
+      alert('Rejection Failed: ' + err.message);
+    }
+  };
+
+  const handleResolveDispute = async (id, status) => {
+    const admin_response = window.prompt(`Strategic Reason for ${status.toUpperCase()}:`);
+    if (admin_response === null) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(`${API_URL}/disputes/${id}/resolve`, { status, admin_response }, { headers: { 'x-auth-token': token } });
+      setDisputes(disputes.filter(d => d.id !== id));
+      alert(`Conflict Bureau: Case ${status.toUpperCase()}`);
+    } catch (err) {
+      alert('Resolution Failed: ' + err.message);
+    }
+  };
+
+  return (
+    <div className="card glass-panel" style={{ animation: 'fadeIn 0.8s ease' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+        <h2 className="gradient-text" style={{ margin: 0 }}>VERIFICATION BUREAU</h2>
+        <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.03)', padding: '4px', borderRadius: '12px' }}>
+          <button
+            onClick={() => setActiveTab('users')}
+            style={{ background: activeTab === 'users' ? 'var(--primary)' : 'transparent', color: activeTab === 'users' ? '#000' : '#666', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: '800', cursor: 'pointer' }}
+          >
+            OPERATIVES ({unverifiedUsers.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('results')}
+            style={{ background: activeTab === 'results' ? 'var(--primary)' : 'transparent', color: activeTab === 'results' ? '#000' : '#666', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: '800', cursor: 'pointer' }}
+          >
+            RESULTS ({pendingResults.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('squads')}
+            style={{ background: activeTab === 'squads' ? 'var(--primary)' : 'transparent', color: activeTab === 'squads' ? '#000' : '#666', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: '800', cursor: 'pointer' }}
+          >
+            SQUADS ({pendingSquads.length})
+          </button>
+        </div>
+      </div>
+
+      {loading ? <p className="text-dim">Decrypting encrypted transmissions...</p> : (
+        activeTab === 'users' ? (
+          <div style={{ display: 'grid', gap: '20px' }}>
+            {unverifiedUsers.length === 0 ? (
+              <div style={{ padding: '80px', textAlign: 'center', border: '1px dashed var(--glass-border)', borderRadius: '20px' }}>
+                <p className="text-dim">All operatives currently verified and active.</p>
+              </div>
+            ) : unverifiedUsers.map(u => (
+              <div key={u.id} className="card glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px', borderLeft: '4px solid var(--primary)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                  <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(212,175,55,0.1)', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid rgba(212,175,55,0.2)' }}>
+                    <Users color="var(--primary)" size={24} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: '0 0 4px 0', color: '#fff' }}>{u.ff_ign}</h3>
+                    <p className="text-dim" style={{ fontSize: '0.8rem', margin: 0 }}>UID: <span style={{ color: 'var(--primary)' }}>{u.ff_uid}</span> | {u.university_id}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleVerifyUser(u.id)}
+                  style={{ background: 'var(--primary)', border: 'none', borderRadius: '10px', padding: '12px 24px', color: '#000', fontWeight: '800', letterSpacing: '1px', cursor: 'pointer' }}
+                >
+                  AUTHORIZE IDENTITY
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : activeTab === 'results' ? (
+          <div style={{ display: 'grid', gap: '24px' }}>
+            {pendingResults.length === 0 ? (
+              <div style={{ padding: '80px', textAlign: 'center', border: '1px dashed var(--glass-border)', borderRadius: '20px' }}>
+                <p className="text-dim">No match results pending intelligence verification.</p>
+              </div>
+            ) : pendingResults.map(r => (
+              <div key={r.id} className="card glass-panel" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px', padding: '32px', borderLeft: '4px solid var(--primary)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ marginBottom: '24px' }}>
+                    <span style={{ color: 'var(--primary)', fontSize: '10px', letterSpacing: '2px', fontWeight: '800' }}>{r.tournament_title.toUpperCase()}</span>
+                    <h3 style={{ margin: '8px 0', color: '#fff' }}>RD {r.round_number} - {r.team_name}</h3>
+                    <span className="text-dim" style={{ fontSize: '12px' }}>Submitted {new Date(r.created_at).toLocaleString()}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '40px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px' }}>PLACEMENT</label>
+                      <span style={{ fontSize: '24px', fontWeight: '800', color: 'var(--primary)' }}>#{r.placement}</span>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px' }}>KILLS</label>
+                      <span style={{ fontSize: '24px', fontWeight: '800', color: '#fff' }}>{r.kills}</span>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px' }}>TOTAL PTS</label>
+                      <span style={{ fontSize: '24px', fontWeight: '800', color: '#4CAF50' }}>{r.total_points}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', marginTop: 'auto' }}>
+                    <button
+                      onClick={() => handleVerifyResult(r.id)}
+                      style={{ flex: 2, background: 'var(--primary)', border: 'none', borderRadius: '12px', padding: '16px', color: '#000', fontWeight: '900', letterSpacing: '1px', cursor: 'pointer' }}
+                    >
+                      AUTHORIZE COMBAT DATA
+                    </button>
+                    <button
+                      onClick={() => handleRejectResult(r.id)}
+                      style={{ flex: 1, background: 'rgba(255, 68, 68, 0.1)', border: '1px solid #ff4444', borderRadius: '12px', padding: '16px', color: '#ff4444', fontWeight: '900', letterSpacing: '1px', cursor: 'pointer' }}
+                    >
+                      REJECT
+                    </button>
+                  </div>
+                </div>
+                <div
+                  onClick={() => setSelectedImage(r.screenshot_url)}
+                  style={{ height: '250px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'zoom-in' }}
+                >
+                  {r.screenshot_url ? (
+                    <img src={r.screenshot_url} alt="Proof" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  ) : (
+                    <span style={{ fontSize: '12px', color: '#444', letterSpacing: '1px' }}>NO VISUAL PROOF PROVIDED</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : activeTab === 'squads' ? (
+          <div style={{ display: 'grid', gap: '20px' }}>
+            {pendingSquads.length === 0 ? (
+              <div style={{ padding: '80px', textAlign: 'center', border: '1px dashed var(--glass-border)', borderRadius: '20px' }}>
+                <p className="text-dim">No pending squad registrations for authorization.</p>
+              </div>
+            ) : pendingSquads.map(s => (
+              <div key={s.id} className="card glass-panel" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '32px', padding: '32px', borderLeft: '4px solid var(--primary)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ marginBottom: '24px' }}>
+                    <span style={{ color: 'var(--primary)', fontSize: '10px', letterSpacing: '2px', fontWeight: '800' }}>{s.tournament_title.toUpperCase()}</span>
+                    <h3 style={{ margin: '8px 0', color: '#fff' }}>{s.team_name} // REGISTRY</h3>
+                    <span className="text-dim" style={{ fontSize: '12px' }}>Enlisted {new Date(s.created_at).toLocaleString()}</span>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', marginTop: 'auto' }}>
+                    <button
+                      onClick={() => handleVerifyRegistration(s.id, 'approved')}
+                      style={{ flex: 2, background: 'var(--primary)', border: 'none', borderRadius: '12px', padding: '16px', color: '#000', fontWeight: '900', letterSpacing: '1px', cursor: 'pointer' }}
+                    >
+                      AUTHORIZE REGISTRATION
+                    </button>
+                    <button
+                      onClick={() => handleVerifyRegistration(s.id, 'rejected')}
+                      style={{ flex: 1, background: 'rgba(255, 68, 68, 0.1)', border: '1px solid #ff4444', borderRadius: '12px', padding: '16px', color: '#ff4444', fontWeight: '900', letterSpacing: '1px', cursor: 'pointer' }}
+                    >
+                      REJECT
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ padding: '20px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)' }}>
+                  <label style={{ display: 'block', fontSize: '10px', color: 'var(--primary)', letterSpacing: '2px', fontWeight: '800', marginBottom: '16px' }}>ROSTER PROTOCOL</label>
+                  <div style={{ display: 'grid', gap: '12px' }}>
+                    {s.roster_snapshot.map((m, idx) => (
+                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '8px 12px', borderRadius: '8px' }}>
+                        <span style={{ fontSize: '12px', color: '#fff', fontWeight: '600' }}>OPERATIVE {idx + 1}</span>
+                        <span style={{ fontSize: '10px', color: 'var(--text-dim)', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '4px' }}>{m.role.toUpperCase()}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gap: '20px' }}>
+            {disputes.length === 0 ? (
+              <div style={{ padding: '80px', textAlign: 'center', border: '1px dashed var(--glass-border)', borderRadius: '20px' }}>
+                <p className="text-dim">No active conflicts detected in the bureau logs.</p>
+              </div>
+            ) : disputes.map(d => (
+              <div key={d.id} className="card glass-panel" style={{ display: 'flex', flexDirection: 'column', padding: '32px', borderLeft: '4px solid #ff4444' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                  <div>
+                    <span style={{ color: '#ff4444', fontSize: '10px', letterSpacing: '2px', fontWeight: '800' }}>{d.tournament_title.toUpperCase()} // CONFLICT</span>
+                    <h3 style={{ margin: '8px 0', color: '#fff' }}>RD {d.round_number} - {d.team_name}</h3>
+                    <p className="text-dim" style={{ fontSize: '12px', margin: 0 }}>Contested by {d.ff_ign} (@{d.ff_uid}) on {new Date(d.created_at).toLocaleString()}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div className="text-dim" style={{ fontSize: '10px', marginBottom: '4px' }}>CURRENT INTEL</div>
+                    <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--primary)' }}>#{d.placement} @ {d.kills} KILLS</div>
+                  </div>
+                </div>
+
+                <div style={{ background: 'rgba(255, 68, 68, 0.05)', border: '1px solid rgba(255, 68, 68, 0.1)', padding: '20px', borderRadius: '12px', marginBottom: '24px' }}>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#ff4444', letterSpacing: '2px', fontWeight: '800', marginBottom: '8px' }}>GRIEVANCE STATEMENT</label>
+                  <p style={{ margin: 0, color: '#fff', lineHeight: '1.6', fontSize: '0.9rem' }}>{d.reason}</p>
+                  {d.evidence_url && (
+                    <button
+                      onClick={() => setSelectedImage(d.evidence_url)}
+                      style={{ marginTop: '16px', background: 'transparent', border: '1px solid rgba(255, 68, 68, 0.2)', color: '#ff4444', padding: '6px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '10px', fontWeight: '800' }}
+                    >
+                      VIEW REBUTTAL INTEL
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <button
+                    onClick={() => handleResolveDispute(d.id, 'resolved')}
+                    style={{ flex: 1, background: '#4CAF50', border: 'none', borderRadius: '12px', padding: '16px', color: '#000', fontWeight: '900', letterSpacing: '1px', cursor: 'pointer' }}
+                  >
+                    AUTHORIZE REVISION
+                  </button>
+                  <button
+                    onClick={() => handleResolveDispute(d.id, 'dismissed')}
+                    style={{ flex: 1, background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '16px', color: '#fff', fontWeight: '900', letterSpacing: '1px', cursor: 'pointer' }}
+                  >
+                    DISMISS CONTEST
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      )}
+      {selectedImage && (
+        <div
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'zoom-out' }}
+          onClick={() => setSelectedImage(null)}
+        >
+          <img src={selectedImage} alt="Fullscreen Proof" style={{ maxWidth: '90%', maxHeight: '90%', borderRadius: '12px', border: '5px solid var(--primary)' }} />
+          <button
+            style={{ position: 'absolute', top: '32px', right: '32px', background: 'var(--primary)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', fontWeight: '900', cursor: 'pointer' }}
+            onClick={() => setSelectedImage(null)}
+          >X</button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PlayerManagement = () => {
+  const [players, setPlayers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editingPlayer, setEditingPlayer] = useState(null);
+  const [messagingPlayer, setMessagingPlayer] = useState(null);
+  const [directMessage, setDirectMessage] = useState('');
+  const [newStats, setNewStats] = useState({ kd_ratio: '', win_rate: '', headshot_rate: '', avg_damage: '' });
+
+  const fetchPlayers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/users/all`, {
+        headers: { 'x-auth-token': token }
+      });
+      setPlayers(res.data);
+    } catch (err) {
+      console.error('Fetch players error:', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchPlayers(); }, []);
+
+  const handleEditClick = (player) => {
+    setEditingPlayer(player);
+    setNewStats(player.stats || { kd_ratio: '0.00', win_rate: '0%', headshot_rate: '0%', avg_damage: '0' });
+  };
+
+  const handleSendMessage = async () => {
+    if (!directMessage) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/users/broadcast`, {
+        targetType: 'user',
+        targetId: messagingPlayer.id,
+        type: 'social',
+        message: directMessage
+      }, { headers: { 'x-auth-token': token } });
+      setMessagingPlayer(null);
+      setDirectMessage('');
+      alert('Transmission successfully beamed to operative.');
+    } catch (err) {
+      alert('Transmission Failed: ' + err.message);
+    }
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`${API_URL}/users/${editingPlayer.id}/stats`, { stats: newStats }, {
+        headers: { 'x-auth-token': token }
+      });
+      setPlayers(players.map(p => p.id === editingPlayer.id ? { ...p, stats: newStats } : p));
+      setEditingPlayer(null);
+      alert('Combat stats synchronized successfully.');
+    } catch (err) {
+      alert('Update Failed: ' + err.message);
+    }
+  };
+
+  return (
+    <div className="card glass-panel" style={{ animation: 'fadeIn 0.8s ease' }}>
+      <h2 className="gradient-text" style={{ marginBottom: '32px' }}>GLOBAL ATHLETE REGISTRY</h2>
+      {loading ? <p className="text-dim">Retrieving combatant data...</p> : (
+        <div style={{ position: 'relative' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--glass-border)' }}>
+                <th style={{ padding: '16px' }}>OPERATIVE</th>
+                <th style={{ padding: '16px' }}>FF UID</th>
+                <th style={{ padding: '16px' }}>K/D RATIO</th>
+                <th style={{ padding: '16px' }}>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {players.map(p => (
+                <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                  <td style={{ padding: '16px' }}>
+                    <div style={{ fontWeight: '600' }}>{p.ff_ign}</div>
+                    <div className="text-dim" style={{ fontSize: '0.8rem' }}>{p.full_name}</div>
+                  </td>
+                  <td style={{ padding: '16px' }} className="text-dim">{p.ff_uid}</td>
+                  <td style={{ padding: '16px' }}>
+                    <span style={{ color: 'var(--primary)', fontWeight: '700' }}>{p.stats?.kd_ratio || '0.00'}</span>
+                  </td>
+                  <td style={{ padding: '16px' }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        onClick={() => handleEditClick(p)}
+                        style={{
+                          background: 'rgba(212, 175, 55, 0.05)', border: '1px solid var(--glass-border)',
+                          borderRadius: '10px', padding: '8px 20px', color: 'var(--primary)', cursor: 'pointer',
+                          fontWeight: '600'
+                        }}
+                      >
+                        STATS
+                      </button>
+                      <button
+                        onClick={() => setMessagingPlayer(p)}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--glass-border)',
+                          borderRadius: '10px', padding: '8px 20px', color: '#fff', cursor: 'pointer',
+                          fontWeight: '600'
+                        }}
+                      >
+                        MESSAGE
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {editingPlayer && (
+            <div className="modal-backdrop" style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000
+            }}>
+              <div className="card glass-panel" style={{ width: '450px', padding: '40px', backgroundColor: '#0A0A0B' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                  <h3 className="gradient-text" style={{ margin: 0 }}>SYNCHRONIZE STATS</h3>
+                  <X color="var(--text-dim)" style={{ cursor: 'pointer' }} onClick={() => setEditingPlayer(null)} />
+                </div>
+
+                <div style={{ display: 'grid', gap: '20px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-dim)', letterSpacing: '2px', marginBottom: '8px' }}>K/D RATIO</label>
+                    <input
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.03)', color: '#fff' }}
+                      value={newStats.kd_ratio} onChange={e => setNewStats({ ...newStats, kd_ratio: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-dim)', letterSpacing: '2px', marginBottom: '8px' }}>WIN RATE</label>
+                    <input
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.03)', color: '#fff' }}
+                      value={newStats.win_rate} onChange={e => setNewStats({ ...newStats, win_rate: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-dim)', letterSpacing: '2px', marginBottom: '8px' }}>AVG DAMAGE</label>
+                    <input
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.03)', color: '#fff' }}
+                      value={newStats.avg_damage} onChange={e => setNewStats({ ...newStats, avg_damage: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px', marginTop: '40px' }}>
+                  <button
+                    onClick={handleUpdate}
+                    style={{ flex: 1, height: '48px', borderRadius: '12px', border: 'none', background: 'var(--primary)', color: '#000', fontWeight: '800' }}
+                  >
+                    SYNC DATA
+                  </button>
+                  <button
+                    onClick={() => setEditingPlayer(null)}
+                    style={{ flex: 1, height: '48px', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'transparent', color: '#fff' }}
+                  >
+                    ABORT
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {messagingPlayer && (
+            <div className="modal-backdrop" style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000
+            }}>
+              <div className="card glass-panel" style={{ width: '450px', padding: '40px', backgroundColor: '#0A0A0B' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                  <div>
+                    <h3 className="gradient-text" style={{ margin: 0 }}>DIRECT TRANSMISSION</h3>
+                    <p className="text-dim" style={{ fontSize: '10px', marginTop: '4px' }}>TO: {messagingPlayer.ff_ign}</p>
+                  </div>
+                  <X color="var(--text-dim)" style={{ cursor: 'pointer' }} onClick={() => setMessagingPlayer(null)} />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-dim)', letterSpacing: '2px', marginBottom: '8px' }}>MESSAGE CONTENT</label>
+                  <textarea
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.03)', color: '#fff', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', minHeight: '120px' }}
+                    placeholder="Enter message for operative..."
+                    value={directMessage}
+                    onChange={e => setDirectMessage(e.target.value)}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px', marginTop: '40px' }}>
+                  <button
+                    onClick={handleSendMessage}
+                    style={{ flex: 1, height: '48px', borderRadius: '12px', border: 'none', background: 'var(--primary)', color: '#000', fontWeight: '800' }}
+                  >
+                    SEND INTEL
+                  </button>
+                  <button
+                    onClick={() => setMessagingPlayer(null)}
+                    style={{ flex: 1, height: '48px', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'transparent', color: '#fff' }}
+                  >
+                    ABORT
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const MatchManagement = ({ tournament, onBack }) => {
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [newMatch, setNewMatch] = useState({
+    room_id: '', room_password: '', map_name: 'Bermuda', round_number: 1, scheduled_at: '', status: 'scheduled'
+  });
+
+  const fetchMatches = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/tournaments/${tournament.id}/matches`);
+      setMatches(res.data);
+    } catch (err) {
+      console.error('Fetch matches error:', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchMatches(); }, [tournament.id]);
+
+  const handleBroadcast = async () => {
+    if (!broadcastMessage) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/users/broadcast`, {
+        targetType: 'tournament',
+        targetId: tournament.id,
+        type: 'match',
+        message: broadcastMessage
+      }, { headers: { 'x-auth-token': token } });
+      setShowBroadcastModal(false);
+      setBroadcastMessage('');
+      alert('Strategic Alert Dispatched to all operatives.');
+    } catch (err) {
+      alert('Broadcast Failed: ' + err.message);
+    }
+  };
+
+  const handleCreateMatch = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API_URL}/tournaments/${tournament.id}/matches`, newMatch, {
+        headers: { 'x-auth-token': token }
+      });
+      setMatches([...matches, res.data]);
+      setShowCreateModal(false);
+      alert('Match Scheduled Successfully');
+    } catch (err) {
+      alert('Match Creation Failed: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  return (
+    <div style={{ animation: 'fadeIn 0.5s ease' }}>
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '32px' }}>
+        <button onClick={onBack} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', padding: '10px', borderRadius: '10px', color: '#fff', cursor: 'pointer' }}>
+          <X size={20} />
+        </button>
+        <h2 className="gradient-text" style={{ margin: 0 }}>{tournament.title} // MATCHES</h2>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <h3 className="text-dim" style={{ fontSize: '0.9rem', letterSpacing: '2px' }}>OPERATIONAL SCHEDULE</h3>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={() => setShowBroadcastModal(true)}
+            style={{ background: 'rgba(212, 175, 55, 0.1)', border: '1px solid var(--primary)', borderRadius: '12px', padding: '12px 24px', color: 'var(--primary)', fontWeight: '800', cursor: 'pointer' }}
+          >
+            DISPATCH ALERT
+          </button>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            style={{ background: 'var(--primary)', border: 'none', borderRadius: '12px', padding: '12px 24px', color: '#000', fontWeight: '800', cursor: 'pointer' }}
+          >
+            SCHEDULE MATCH
+          </button>
+        </div>
+      </div>
+
+      {loading ? <p className="text-dim">Scanning match protocols...</p> : (
+        <div style={{ display: 'grid', gap: '16px' }}>
+          {matches.length === 0 ? (
+            <div className="card glass-panel" style={{ textAlign: 'center', padding: '40px', borderStyle: 'dashed' }}>
+              <p className="text-dim">No matches scheduled for this arena.</p>
+            </div>
+          ) : matches.map(m => (
+            <div key={m.id} className="card glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px' }}>
+              <div>
+                <h4 style={{ margin: '0 0 4px 0', color: '#fff' }}>Round {m.round_number} - {m.map_name}</h4>
+                <p className="text-dim" style={{ fontSize: '0.8rem', margin: 0 }}>
+                  ID: <span style={{ color: 'var(--primary)' }}>{m.room_id || 'PENDING'}</span> |
+                  Time: {new Date(m.scheduled_at).toLocaleString()}
+                </p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: '800', color: 'var(--primary)', border: '1px solid rgba(212,175,55,0.3)', padding: '4px 12px', borderRadius: '20px' }}>
+                  {m.status.toUpperCase()}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showCreateModal && (
+        <div className="modal-backdrop" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 4000 }}>
+          <div className="card glass-panel" style={{ width: '500px', padding: '40px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 className="gradient-text" style={{ margin: 0 }}>SCHEDULE MATCH</h3>
+              <X color="var(--text-dim)" style={{ cursor: 'pointer' }} onClick={() => setShowCreateModal(false)} />
+            </div>
+            <div style={{ display: 'grid', gap: '20px' }}>
+              <div>
+                <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>MAP NAME</label>
+                <select style={{ width: '100%', background: 'rgba(255,255,255,0.05)', color: '#fff', padding: '12px', borderRadius: '10px', border: '1px solid var(--glass-border)' }} onChange={e => setNewMatch({ ...newMatch, map_name: e.target.value })}>
+                  <option value="Bermuda">BERMUDA</option>
+                  <option value="Purgatory">PURGATORY</option>
+                  <option value="Kalahari">KALAHARI</option>
+                  <option value="Alpine">ALPINE</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>ROOM ID</label>
+                  <input style={{ width: '100%' }} placeholder="Room ID" onChange={e => setNewMatch({ ...newMatch, room_id: e.target.value })} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>PASSWORD</label>
+                  <input style={{ width: '100%' }} placeholder="Password" onChange={e => setNewMatch({ ...newMatch, room_password: e.target.value })} />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>ROUND #</label>
+                  <input type="number" style={{ width: '100%' }} defaultValue="1" onChange={e => setNewMatch({ ...newMatch, round_number: parseInt(e.target.value) })} />
+                </div>
+                <div style={{ flex: 2 }}>
+                  <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>SCHEDULED AT</label>
+                  <input type="datetime-local" style={{ width: '100%' }} onChange={e => setNewMatch({ ...newMatch, scheduled_at: e.target.value })} />
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '16px', marginTop: '32px' }}>
+              <button onClick={handleCreateMatch} style={{ flex: 2, background: 'var(--primary)', color: '#000', fontWeight: '800', borderRadius: '12px', padding: '14px', border: 'none', cursor: 'pointer' }}>DEPLOY MATCH</button>
+              <button onClick={() => setShowCreateModal(false)} style={{ flex: 1, background: 'transparent', color: '#fff', borderRadius: '12px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}>CANCEL</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showBroadcastModal && (
+        <div className="modal-backdrop" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 4000 }}>
+          <div className="card glass-panel" style={{ width: '500px', padding: '40px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 className="gradient-text" style={{ margin: 0 }}>DISPATCH STRATEGIC ALERT</h3>
+              <X color="var(--text-dim)" style={{ cursor: 'pointer' }} onClick={() => setShowBroadcastModal(false)} />
+            </div>
+            <p className="text-dim" style={{ fontSize: '12px', marginBottom: '20px' }}>This message will be sent to all operatives registered for this tournament.</p>
+            <div>
+              <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>MESSAGE CONTENT</label>
+              <textarea
+                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', color: '#fff', padding: '12px', borderRadius: '12px', border: '1px solid var(--glass-border)', minHeight: '120px' }}
+                placeholder="Example: Room ID updated to 12345. Pass: secure."
+                value={broadcastMessage}
+                onChange={e => setBroadcastMessage(e.target.value)}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '16px', marginTop: '32px' }}>
+              <button onClick={handleBroadcast} style={{ flex: 2, background: 'var(--primary)', color: '#000', fontWeight: '800', borderRadius: '12px', padding: '14px', border: 'none', cursor: 'pointer' }}>BROADCAST INTEL</button>
+              <button onClick={() => setShowBroadcastModal(false)} style={{ flex: 1, background: 'transparent', color: '#fff', borderRadius: '12px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}>CANCEL</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const TournamentManagement = () => {
+  const [tournaments, setTournaments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTournament, setSelectedTournament] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [newTournament, setNewTournament] = useState({
+    title: '', description: '', format: 'Solo',
+    registration_deadline: '', start_date: '',
+    scoring_params: { kill_points: 1, placement_points: { "1": 12, "2": 9, "3": 7, "4": 5, "5": 4 } }
+  });
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkData, setBulkData] = useState('');
+  const [processingBulk, setProcessingBulk] = useState(false);
+
+  const fetchTournaments = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/tournaments`);
+      setTournaments(res.data);
+    } catch (err) {
+      console.error('Fetch tournaments error:', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkSubmit = async () => {
+    if (!bulkData.trim()) return;
+    setProcessingBulk(true);
+    try {
+      const parsedData = JSON.parse(bulkData);
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/results/bulk`, { results: parsedData }, { headers: { 'x-auth-token': token } });
+      alert('Bulk ingestion successful. Command logs updated.');
+      setShowBulkModal(false);
+      setBulkData('');
+    } catch (err) {
+      alert('Bulk Intel Error: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setProcessingBulk(false);
+    }
+  };
+
+  useEffect(() => { fetchTournaments(); }, []);
+
+  const handleCreate = async () => {
+    if (!newTournament.title || !newTournament.start_date) {
+      alert('Strategic Error: Tournament Title and Start Date are mandatory.');
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API_URL}/tournaments/create`, newTournament, {
+        headers: { 'x-auth-token': token }
+      });
+      setTournaments([res.data, ...tournaments]);
+      setShowModal(false);
+      alert('Arena Successfully Deployed');
+    } catch (err) {
+      alert('Deployment Failed: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleDelete = async (e, id) => {
+    e.stopPropagation();
+    if (!window.confirm("ARE YOU SURE YOU WANT TO DELETE THIS TOURNAMENT? THIS ACTION IS IRREVERSIBLE.")) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_URL}/tournaments/${id}`, { headers: { 'x-auth-token': token } });
+      setTournaments(tournaments.filter(t => t.id !== id));
+      alert('Tournament Deleted Successfully');
+    } catch (err) {
+      alert('Deletion Failed: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const updatePlacementPoints = (rank, val) => {
+    setNewTournament({
+      ...newTournament,
+      scoring_params: {
+        ...newTournament.scoring_params,
+        placement_points: {
+          ...newTournament.scoring_params.placement_points,
+          [rank]: parseInt(val) || 0
+        }
+      }
+    });
+  };
+
+  if (selectedTournament) {
+    return <MatchManagement tournament={selectedTournament} onBack={() => setSelectedTournament(null)} />;
+  }
+
+  return (
+    <div className="card glass-panel" style={{ animation: 'fadeIn 0.8s ease' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+        <div>
+          <h2 className="gradient-text" style={{ margin: 0, letterSpacing: '2px' }}>COMMAND CENTER</h2>
+          <p className="text-dim" style={{ fontSize: '0.8rem', marginTop: '4px' }}>Strategic Tournament Deployment & Oversight</p>
+        </div>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={() => setShowBulkModal(true)}
+            style={{
+              background: 'transparent', border: '1px solid var(--primary)', borderRadius: '14px',
+              padding: '14px 28px', color: 'var(--primary)', fontWeight: '800', cursor: 'pointer',
+              letterSpacing: '1px', transition: 'all 0.2s ease'
+            }}
+            onMouseOver={e => { e.currentTarget.style.background = 'rgba(212,175,55,0.05)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+            onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'scale(1)'; }}
+          >
+            BULK INGEST
+          </button>
+          <button
+            onClick={() => setShowModal(true)}
+            style={{
+              background: 'var(--primary)', border: 'none', borderRadius: '14px',
+              padding: '14px 28px', color: '#000', fontWeight: '900', cursor: 'pointer',
+              boxShadow: '0 4px 20px var(--primary-glow)', letterSpacing: '1px',
+              transition: 'transform 0.2s ease'
+            }}
+            onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            LAUNCH NEW ARENA
+          </button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div style={{ padding: '60px', textAlign: 'center' }}>
+          <div className="text-dim" style={{ animation: 'pulse 1.5s infinite' }}>Scanning for active protocols...</div>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gap: '20px' }}>
+          {tournaments.length === 0 ? (
+            <div className="card glass-panel" style={{ textAlign: 'center', padding: '80px', borderStyle: 'dashed' }}>
+              <p className="text-dim" style={{ fontSize: '1.1rem' }}>No active arenas detected. Initialize your first operation.</p>
+            </div>
+          ) : tournaments.map(t => (
+            <div key={t.id} className="card glass-panel tournament-item" style={{
+              flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+              padding: '24px', borderLeft: '4px solid var(--primary)', cursor: 'pointer'
+            }} onClick={() => setSelectedTournament(t)}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{
+                  width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(212,175,55,0.1)',
+                  display: 'flex', justifyContent: 'center', alignItems: 'center'
+                }}>
+                  <Trophy color="var(--primary)" size={24} />
+                </div>
+                <div>
+                  <h3 style={{ margin: '0 0 6px 0', color: '#fff', fontSize: '1.2rem', fontWeight: '700' }}>{t.title}</h3>
+                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                    <span className="text-dim" style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <LayoutDashboard size={14} /> {t.format}
+                    </span>
+                    <span className="text-dim" style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Settings size={14} /> {new Date(t.start_date).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{
+                  display: 'inline-block', padding: '6px 16px', borderRadius: '30px',
+                  fontSize: '0.75rem', fontWeight: '800', letterSpacing: '1.5px',
+                  background: t.status === 'open' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(212, 175, 55, 0.1)',
+                  color: t.status === 'open' ? '#4CAF50' : 'var(--primary)',
+                  border: `1px solid ${t.status === 'open' ? 'rgba(76,175,80,0.2)' : 'rgba(212,175,55,0.2)'}`,
+                  marginRight: '12px'
+                }}>
+                  {t.status.toUpperCase()}
+                </div>
+                <button
+                  onClick={(e) => handleDelete(e, t.id)}
+                  style={{
+                    background: 'rgba(255, 68, 68, 0.1)', border: '1px solid rgba(255, 68, 68, 0.3)',
+                    color: '#ff4444', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer', fontWeight: '800'
+                  }}
+                >
+                  DELETE
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showModal && (
+        <div className="modal-backdrop" style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 3000,
+          backdropFilter: 'blur(8px)'
+        }}>
+          <div className="card glass-panel" style={{
+            width: '750px', padding: '0', backgroundColor: '#0D0D0F',
+            maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+            boxShadow: '0 0 50px rgba(0,0,0,0.5)', border: '1px solid var(--glass-border)'
+          }}>
+
+            <div style={{ padding: '32px 40px', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 className="gradient-text" style={{ margin: 0, fontSize: '1.5rem', letterSpacing: '1px' }}>ARENA INITIALIZATION</h3>
+                <p className="text-dim" style={{ fontSize: '0.8rem', marginTop: '4px' }}>Configure strategic parameters for the upcoming match.</p>
+              </div>
+              <X color="var(--text-dim)" style={{ cursor: 'pointer' }} onClick={() => setShowModal(false)} />
+            </div>
+
+            <div style={{ padding: '40px', overflowY: 'auto' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+
+                {/* Section: General Info */}
+                <div style={{ gridColumn: 'span 2' }}>
+                  <h4 style={{ color: 'var(--primary)', fontSize: '0.7rem', letterSpacing: '3px', marginBottom: '20px', borderBottom: '1px solid rgba(212,175,55,0.1)', paddingBottom: '10px' }}>GENERAL PROTOCOL</h4>
+                  <div style={{ display: 'grid', gap: '20px' }}>
+                    <div>
+                      <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>ARENA TITLE</label>
+                      <input style={{ width: '100%', background: 'rgba(255,255,255,0.03)', color: '#fff' }} placeholder="Example: Royal University Invitational" onChange={e => setNewTournament({ ...newTournament, title: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>OPERATIONAL SUMMARY</label>
+                      <textarea
+                        style={{
+                          width: '100%', background: 'rgba(255,255,255,0.03)', color: '#fff', border: '1px solid var(--glass-border)',
+                          borderRadius: '12px', padding: '12px', minHeight: '100px', outline: 'none'
+                        }}
+                        placeholder="Detailed mission brief for the combatants..."
+                        onChange={e => setNewTournament({ ...newTournament, description: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section: Configuration */}
+                <div>
+                  <h4 style={{ color: 'var(--primary)', fontSize: '0.7rem', letterSpacing: '3px', marginBottom: '20px', borderBottom: '1px solid rgba(212,175,55,0.1)', paddingBottom: '10px' }}>LOGISTICS</h4>
+                  <div style={{ display: 'grid', gap: '20px' }}>
+                    <div>
+                      <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>COMBAT FORMAT</label>
+                      <select
+                        style={{
+                          width: '100%', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid var(--glass-border)',
+                          borderRadius: '12px', padding: '12px'
+                        }}
+                        onChange={e => setNewTournament({ ...newTournament, format: e.target.value })}
+                      >
+                        <option value="Solo">SOLO (Single operative)</option>
+                        <option value="Duo">DUO (Pairs)</option>
+                        <option value="Squad">SQUAD (Full unit)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>START DATE</label>
+                      <input type="date" style={{ width: '100%', background: 'rgba(255,255,255,0.03)', color: '#fff' }} onChange={e => setNewTournament({ ...newTournament, start_date: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>ENLISTMENT DEADLINE</label>
+                      <input type="date" style={{ width: '100%', background: 'rgba(255,255,255,0.03)', color: '#fff' }} onChange={e => setNewTournament({ ...newTournament, registration_deadline: e.target.value })} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section: Scoring */}
+                <div>
+                  <h4 style={{ color: 'var(--primary)', fontSize: '0.7rem', letterSpacing: '3px', marginBottom: '20px', borderBottom: '1px solid rgba(212,175,55,0.1)', paddingBottom: '10px' }}>SCORING PARAMS</h4>
+                  <div style={{ display: 'grid', gap: '20px' }}>
+                    <div>
+                      <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>KILL POINTS</label>
+                      <input type="number" style={{ width: '100%', background: 'rgba(255,255,255,0.03)', color: '#fff' }} defaultValue="1" onChange={e => setNewTournament({ ...newTournament, scoring_params: { ...newTournament.scoring_params, kill_points: parseInt(e.target.value) } })} />
+                    </div>
+                    <div>
+                      <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '12px' }}>PLACEMENT REWARDS (1st - 5th)</label>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {[1, 2, 3, 4, 5].map(rank => (
+                          <div key={rank} style={{ flex: 1 }}>
+                            <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--primary)', marginBottom: '4px' }}>#{rank}</div>
+                            <input
+                              type="number"
+                              style={{ width: '100%', padding: '8px', textAlign: 'center', background: 'rgba(255,255,255,0.03)', fontSize: '12px' }}
+                              defaultValue={newTournament.scoring_params.placement_points[rank]}
+                              onChange={e => updatePlacementPoints(rank, e.target.value)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div style={{ padding: '32px 40px', borderTop: '1px solid var(--glass-border)', display: 'flex', gap: '20px', background: 'rgba(255,255,255,0.01)' }}>
+              <button
+                onClick={handleCreate}
+                className="btn-primary"
+                style={{
+                  flex: 2, height: '56px', borderRadius: '16px', border: 'none',
+                  background: 'var(--primary)', color: '#000', fontWeight: '900',
+                  fontSize: '0.9rem', letterSpacing: '2px', cursor: 'pointer'
+                }}
+              >
+                DEPLOY ARENA
+              </button>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{
+                  flex: 1, height: '56px', borderRadius: '16px', border: '1px solid var(--glass-border)',
+                  background: 'transparent', color: '#fff', fontSize: '0.9rem', letterSpacing: '2px',
+                  cursor: 'pointer'
+                }}
+              >
+                ABORT
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showBulkModal && (
+        <div className="modal-backdrop" style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 3001,
+          backdropFilter: 'blur(8px)'
+        }}>
+          <div className="card glass-panel" style={{
+            width: '600px', padding: '0', backgroundColor: '#0D0D0F',
+            boxShadow: '0 0 50px rgba(0,0,0,0.5)', border: '1px solid var(--glass-border)'
+          }}>
+            <div style={{ padding: '32px 40px', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 className="gradient-text" style={{ margin: 0, fontSize: '1.5rem', letterSpacing: '1px' }}>BULK DATA INGEST</h3>
+                <p className="text-dim" style={{ fontSize: '0.8rem', marginTop: '4px' }}>Strategic Data Synchronization Protocol</p>
+              </div>
+              <X color="var(--text-dim)" style={{ cursor: 'pointer' }} onClick={() => setShowBulkModal(false)} />
+            </div>
+
+            <div style={{ padding: '40px' }}>
+              <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '12px' }}>JSON INTEL STREAM</label>
+              <textarea
+                style={{
+                  width: '100%', background: 'rgba(255,255,255,0.02)', color: 'var(--primary)',
+                  border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '16px',
+                  minHeight: '200px', outline: 'none', fontFamily: 'monospace', fontSize: '12px'
+                }}
+                placeholder='[{"match_id": 1, "team_id": 5, "kills": 12, "placement": 1}, ...]'
+                value={bulkData}
+                onChange={e => setBulkData(e.target.value)}
+              />
+              <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(212,175,55,0.05)', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.1)' }}>
+                <p style={{ margin: 0, color: 'var(--primary)', fontSize: '11px', fontWeight: '600', letterSpacing: '1px' }}>
+                  ⚠️ WARN: All submitted results will be auto-verified and stat-synced across squad members.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ padding: '32px 40px', borderTop: '1px solid var(--glass-border)', display: 'flex', gap: '20px' }}>
+              <button
+                onClick={handleBulkSubmit}
+                disabled={processingBulk}
+                className="btn-primary"
+                style={{ flex: 2, height: '52px', borderRadius: '14px', border: 'none', background: 'var(--primary)', color: '#000', fontWeight: '900', cursor: 'pointer' }}
+              >
+                {processingBulk ? 'SYNCHRONIZING...' : 'EXECUTE INGESTION'}
+              </button>
+              <button
+                onClick={() => setShowBulkModal(false)}
+                style={{ flex: 1, height: '52px', borderRadius: '14px', border: '1px solid var(--glass-border)', background: 'transparent', color: '#fff', cursor: 'pointer' }}
+              >
+                ABORT
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+const AdminLogin = ({ onLoginSuccess }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API_URL}/auth/login`, { email, password });
+      if (res.data.user.role !== 'admin') {
+        alert('Access Denied: Admin privileges required.');
+        return;
+      }
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      onLoginSuccess(res.data.token);
+    } catch (err) {
+      alert('Login Failed: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#0A0A0B' }}>
+      <div className="card glass-panel" style={{ width: '400px', padding: '40px' }}>
+        <h2 className="gradient-text" style={{ textAlign: 'center', marginBottom: '32px' }}>ADMIN PROTOCOL</h2>
+        <form onSubmit={handleLogin} style={{ display: 'grid', gap: '20px' }}>
+          <div>
+            <label className="text-dim" style={{ fontSize: '11px', letterSpacing: '2px' }}>EMAIL</label>
+            <input
+              type="email"
+              style={{ width: '100%', background: 'rgba(255,255,255,0.03)', color: '#fff' }}
+              placeholder="admin@quadra.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className="text-dim" style={{ fontSize: '11px', letterSpacing: '2px' }}>SECURITY KEY</label>
+            <input
+              type="password"
+              style={{ width: '100%', background: 'rgba(255,255,255,0.03)', color: '#fff' }}
+              placeholder="••••••••"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              height: '52px', borderRadius: '14px', border: 'none',
+              background: 'var(--primary)', color: '#000', fontWeight: '800',
+              marginTop: '12px', cursor: 'pointer'
+            }}
+          >
+            {loading ? 'VERIFYING...' : 'AUTHORIZE'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const SeasonControl = () => {
+  const [seasonLabel, setSeasonLabel] = useState("");
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchHistory = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/seasons/history`, { headers: { 'x-auth-token': token } });
+      setHistory(res.data);
+    } catch (err) { console.error(err); }
+  };
+
+  useEffect(() => { fetchHistory(); }, []);
+
+  const handleArchive = async () => {
+    if (!seasonLabel.trim()) return alert("Enter a Season Label");
+    if (!window.confirm(`ARCHIVE "${seasonLabel}"? This will snapshot the current leaderboard.`)) return;
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/seasons/archive`, { seasonLabel }, { headers: { 'x-auth-token': token } });
+      alert("Season Archived Successfully");
+      setSeasonLabel("");
+      fetchHistory();
+    } catch (err) {
+      alert("Archival Failed: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="card glass-panel" style={{ animation: 'fadeIn 0.8s ease' }}>
+      <h2 className="gradient-text" style={{ marginBottom: '32px' }}>SEASON CONTROL</h2>
+
+      <div className="card glass-panel" style={{ padding: '24px', borderLeft: '4px solid var(--primary)', marginBottom: '32px' }}>
+        <h3 style={{ color: '#fff', marginTop: 0 }}>INITIATE ARCHIVAL PROTOCOL</h3>
+        <p className="text-dim">Snapshot the current global leaderboard and reset for the next season.</p>
+        <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+          <input
+            type="text"
+            placeholder="Season Label (e.g. SEASON 1: GENESIS)"
+            value={seasonLabel}
+            onChange={(e) => setSeasonLabel(e.target.value)}
+            style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: '#fff' }}
+          />
+          <button
+            onClick={handleArchive}
+            disabled={loading}
+            style={{ background: '#D4AF37', border: 'none', borderRadius: '8px', padding: '0 24px', fontWeight: '800', cursor: 'pointer' }}
+          >
+            {loading ? 'ARCHIVING...' : 'ARCHIVE SEASON'}
+          </button>
+        </div>
+      </div>
+
+      <h3 style={{ color: '#fff' }}>ARCHIVAL HISTORY</h3>
+      <div style={{ display: 'grid', gap: '16px' }}>
+        {history.map((h, idx) => (
+          <div key={idx} className="card glass-panel" style={{ display: 'flex', justifyContent: 'space-between', padding: '16px', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontWeight: '800', color: 'var(--primary)', letterSpacing: '1px' }}>{h.season_label}</div>
+              <div className="text-dim" style={{ fontSize: '12px' }}>Archived: {new Date(h.archived_date).toLocaleString()}</div>
+            </div>
+            <div style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', fontSize: '10px', fontWeight: '700' }}>
+              LOCKED
+            </div>
+          </div>
+        ))}
+        {history.length === 0 && <p className="text-dim">No archived seasons found.</p>}
+      </div>
+    </div>
+  );
+};
+
+const SquadManagement = () => {
+  const [squads, setSquads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedSquad, setExpandedSquad] = useState(null);
+
+  useEffect(() => {
+    fetchSquads();
+  }, []);
+
+  const fetchSquads = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/teams/all`, { headers: { 'x-auth-token': token } });
+      setSquads(res.data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Fetch Squads Error:', err);
+      setLoading(false);
+    }
+  };
+
+  const toggleExpand = (id) => {
+    setExpandedSquad(expandedSquad === id ? null : id);
+  };
+
+  return (
+    <div className="card glass-panel" style={{ animation: 'fadeIn 0.6s ease' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
+        <ShieldAlert color="var(--primary)" size={32} />
+        <h1 className="gradient-text" style={{ margin: 0 }}>SQUAD REGISTRY</h1>
+      </div>
+
+      {loading ? (
+        <p className="text-dim">Scanning database...</p>
+      ) : squads.length === 0 ? (
+        <div style={{
+          padding: '80px',
+          textAlign: 'center',
+          border: '1px dashed var(--glass-border)',
+          borderRadius: '20px',
+          background: 'rgba(255,255,255,0.01)'
+        }}>
+          <Users size={48} color="var(--text-dim)" style={{ opacity: 0.5, marginBottom: '20px' }} />
+          <h3 style={{ color: '#fff', margin: '0 0 8px 0' }}>NO ACTIVE SQUADS</h3>
+          <p className="text-dim">The registry is currently empty. No units have been formed.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gap: '20px' }}>
+          {squads.map(squad => (
+            <div key={squad.id} className="card glass-panel" style={{
+              padding: '0',
+              borderLeft: `4px solid ${expandedSquad === squad.id ? 'var(--primary)' : 'transparent'}`,
+              transition: 'all 0.3s ease'
+            }}>
+              {/* Header / Summary */}
+              <div
+                onClick={() => toggleExpand(squad.id)}
+                style={{
+                  padding: '24px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  background: expandedSquad === squad.id ? 'rgba(212, 175, 55, 0.05)' : 'transparent'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                  <div style={{
+                    width: '50px', height: '50px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02))',
+                    display: 'flex', justifyContent: 'center', alignItems: 'center',
+                    border: '1px solid rgba(255,255,255,0.1)'
+                  }}>
+                    <span style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>
+                      {squad.name.substring(0, 2).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 style={{ margin: '0 0 4px 0', color: '#fff', fontSize: '1.2rem' }}>{squad.name}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span className="text-dim" style={{ fontSize: '0.8rem' }}>ID: {squad.id.split('-')[0]}</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: '600', letterSpacing: '1px' }}>
+                        INVITE: {squad.invite_code}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <span className="text-dim" style={{ fontSize: '10px', display: 'block', marginBottom: '4px' }}>STRENGTH</span>
+                    <span style={{ fontSize: '1.2rem', fontWeight: '700', color: '#fff' }}>
+                      {squad.member_count} / 5
+                    </span>
+                  </div>
+                  <div style={{
+                    transform: `rotate(${expandedSquad === squad.id ? '180deg' : '0deg'})`,
+                    transition: 'transform 0.3s ease'
+                  }}>
+                    <ChevronLeft style={{ transform: 'rotate(-90deg)' }} color="var(--text-dim)" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Expansion Details */}
+              {expandedSquad === squad.id && (
+                <div style={{
+                  padding: '0 24px 24px 24px',
+                  animation: 'fadeIn 0.3s ease',
+                  borderTop: '1px solid var(--glass-border)'
+                }}>
+                  <div style={{ marginTop: '24px' }}>
+                    <h4 style={{ color: 'var(--primary)', fontSize: '12px', letterSpacing: '2px', marginBottom: '16px' }}>ROSTER MANIFEST</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
+                      {squad.members.map(member => (
+                        <div key={member.id} style={{
+                          background: 'rgba(0,0,0,0.3)',
+                          padding: '16px',
+                          borderRadius: '12px',
+                          border: '1px solid rgba(255,255,255,0.05)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px'
+                        }}>
+                          <div style={{
+                            width: '8px', height: '8px', borderRadius: '50%',
+                            background: member.role === 'leader' ? 'var(--primary)' : '#4CAF50',
+                            boxShadow: member.role === 'leader' ? '0 0 8px var(--primary)' : 'none'
+                          }} />
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ color: '#fff', fontWeight: '600' }}>{member.ff_ign}</span>
+                              {member.role === 'leader' && <ShieldAlert size={12} color="var(--primary)" />}
+                            </div>
+                            <span className="text-dim" style={{ fontSize: '11px' }}>{member.role.toUpperCase()} // K/D: {member.stats?.kd_ratio || '0.00'}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const LiveScorer = ({ match, onClose }) => {
+  const [tickerText, setTickerText] = useState("");
+  const [lastUpdate, setLastUpdate] = useState(null);
+  const [teams, setTeams] = useState([]);
+  const [scores, setScores] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedTeam, setExpandedTeam] = useState(null); // 'TeamName' or null
+
+  useEffect(() => {
+    const fetchState = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${API_URL}/live/${match.id}/state`, { headers: { 'x-auth-token': token } });
+        setTeams(res.data.teams); // [{ team_id, team_name, roster: [{ ff_ign, role }] }]
+        setScores(res.data.current_scores || []);
+      } catch (err) {
+        console.error("Failed to load live state", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchState();
+  }, [match.id]);
+
+  const sendUpdate = async (type, payload) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/live/${match.id}/update`,
+        { type, payload },
+        { headers: { 'x-auth-token': token } }
+      );
+      setLastUpdate(new Date());
+
+      // Optimistic Update
+      const teamPts = payload.points || (type === 'player_kill' ? 1 : 0);
+
+      if (type === 'score' || type === 'player_kill') {
+        setScores(prev => {
+          const existing = prev.find(s => s.team === payload.team);
+          let players = existing?.players || {};
+
+          if (type === 'player_kill') {
+            const pName = payload.player;
+            players = { ...players, [pName]: { kills: (players[pName]?.kills || 0) + 1 } };
+          }
+
+          if (existing) {
+            return prev.map(s => s.team === payload.team ? {
+              ...s,
+              points: (s.points || 0) + teamPts,
+              players
+            } : s);
+          }
+          return [...prev, { team: payload.team, points: teamPts, status: 'alive', players }];
+        });
+      } else if (type === 'status') {
+        setScores(prev => {
+          const existing = prev.find(s => s.team === payload.team);
+          if (existing) {
+            return prev.map(s => s.team === payload.team ? { ...s, status: payload.status } : s);
+          }
+          return [...prev, { team: payload.team, points: 0, status: payload.status }];
+        });
+      }
+
+      if (type === 'ticker') setTickerText("");
+    } catch (err) {
+      alert('Failed to broadcast: ' + err.message);
+    }
+  };
+
+  const getTeamScore = (teamName) => scores.find(s => s.team === teamName)?.points || 0;
+  const getTeamStatus = (teamName) => scores.find(s => s.team === teamName)?.status || 'alive';
+  const getPlayerKills = (teamName, ign) => scores.find(s => s.team === teamName)?.players?.[ign]?.kills || 0;
+
+  const toggleExpand = (teamName) => {
+    setExpandedTeam(expandedTeam === teamName ? null : teamName);
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      background: 'rgba(0,0,0,0.95)', zIndex: 1000,
+      display: 'flex', flexDirection: 'column', padding: '40px'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div>
+          <div style={{ color: '#4CAF50', fontWeight: '800', letterSpacing: '2px', fontSize: '14px' }}>LIVE CASTING // {match.room_id}</div>
+          <h1 style={{ color: '#fff', margin: 0, fontSize: '2.5rem' }}>MATCH OPERATION CENTER</h1>
+        </div>
+        <button onClick={onClose} style={{ background: 'transparent', border: '1px solid #666', color: '#fff', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer' }}>
+          CLOSE FEED
+        </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '40px', flex: 1, overflow: 'hidden' }}>
+
+        {/* TICKER CONTROL */}
+        <div className="card glass-panel" style={{ borderLeft: '4px solid #FFD700', height: 'fit-content' }}>
+          <h2 style={{ color: '#FFD700', marginTop: 0 }}>NEWS TICKER</h2>
+          <textarea
+            value={tickerText}
+            onChange={(e) => setTickerText(e.target.value)}
+            placeholder="Manual override message..."
+            style={{
+              width: '100%', height: '100px', background: 'rgba(0,0,0,0.3)',
+              border: '1px solid #444', borderRadius: '12px', color: '#fff', padding: '16px',
+              fontSize: '16px', marginBottom: '20px', fontFamily: 'inherit'
+            }}
+          />
+          <button
+            onClick={() => sendUpdate('ticker', { text: tickerText })}
+            disabled={!tickerText.trim()}
+            className="btn-primary"
+            style={{ width: '100%', padding: '16px', fontSize: '16px', fontWeight: 'bold', background: 'var(--primary)', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+          >
+            BROADCAST
+          </button>
+        </div>
+
+        {/* SCOREBOARD CONTROL */}
+        <div className="card glass-panel" style={{ borderLeft: '4px solid #4CAF50', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <h2 style={{ color: '#4CAF50', marginTop: 0, margin: 0 }}>LIVE SCORING</h2>
+          </div>
+
+          <div style={{ overflowY: 'auto', paddingRight: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {loading ? <p className="text-dim">Loading Squads...</p> : teams.length === 0 ? (
+              <p className="text-dim">No squads registered for this match.</p>
+            ) : teams.map(t => {
+              const score = getTeamScore(t.team_name);
+              const status = getTeamStatus(t.team_name);
+              const isExpanded = expandedTeam === t.team_name;
+
+              return (
+                <div key={t.team_id} style={{
+                  padding: '16px', background: status === 'eliminated' ? 'rgba(255, 68, 68, 0.05)' : 'rgba(255,255,255,0.05)',
+                  borderRadius: '12px',
+                  border: status === 'eliminated' ? '1px solid rgba(255, 68, 68, 0.2)' : '1px solid transparent',
+                  transition: 'all 0.2s'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div onClick={() => toggleExpand(t.team_name)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ color: status === 'eliminated' ? '#ff4444' : '#fff', fontWeight: '700', fontSize: '1.2rem' }}>{t.team_name}</span>
+                      <span style={{ color: 'var(--primary)', fontSize: '0.9rem', fontWeight: 'bold' }}>{score} PTS</span>
+                      {!isExpanded && <span className="text-dim" style={{ fontSize: '0.8rem', marginTop: '4px' }}>Click to view roster</span>}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        onClick={() => sendUpdate('score', { team: t.team_name, points: 5 })}
+                        disabled={status === 'eliminated'}
+                        style={{ background: '#FFC107', border: 'none', borderRadius: '6px', padding: '8px 12px', color: '#000', fontWeight: 'bold', cursor: 'pointer', opacity: status === 'eliminated' ? 0.5 : 1 }}
+                      >
+                        +5 PTS
+                      </button>
+                      <button
+                        onClick={() => sendUpdate('status', { team: t.team_name, status: status === 'eliminated' ? 'alive' : 'eliminated' })}
+                        style={{ background: status === 'eliminated' ? '#333' : '#FF4444', border: 'none', borderRadius: '6px', padding: '8px 12px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}
+                      >
+                        {status === 'eliminated' ? 'REVIVE' : 'WIPEOUT'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {isExpanded && (
+                    <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                      <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-dim)', fontSize: '0.9rem' }}>ROSTER OPERATIONS</h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                        {t.roster && t.roster.length > 0 ? t.roster.map(player => (
+                          <div key={player.ff_ign} style={{ background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <div style={{ color: '#fff', fontWeight: '600', fontSize: '0.9rem' }}>{player.ff_ign}</div>
+                              <div className="text-dim" style={{ fontSize: '0.8rem' }}>{getPlayerKills(t.team_name, player.ff_ign)} Kills</div>
+                            </div>
+                            <button
+                              onClick={() => sendUpdate('player_kill', { team: t.team_name, player: player.ff_ign, points: 1 })}
+                              disabled={status === 'eliminated'}
+                              style={{ background: 'var(--primary)', border: 'none', borderRadius: '4px', padding: '6px 12px', color: '#000', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer', opacity: status === 'eliminated' ? 0.5 : 1 }}
+                            >
+                              KILL (+1)
+                            </button>
+                          </div>
+                        )) : <span className="text-dim">No roster data available.</span>}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const GlobalMatchManagement = () => {
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedLiveMatch, setSelectedLiveMatch] = useState(null);
+
+  useEffect(() => {
+    fetchMatches();
+  }, []);
+
+  const fetchMatches = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/tournaments/matches/all`, { headers: { 'x-auth-token': token } });
+      setMatches(res.data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Fetch Matches Error:', err);
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'live': return '#4CAF50';
+      case 'completed': return '#8A8A8E';
+      case 'scheduled': return '#FFD700';
+      default: return '#fff';
+    }
+  };
+
+  if (selectedLiveMatch) {
+    return <LiveScorer match={selectedLiveMatch} onClose={() => setSelectedLiveMatch(null)} />;
+  }
+
+  return (
+    <div className="card glass-panel" style={{ animation: 'fadeIn 0.6s ease' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
+        <Flag color="var(--primary)" size={32} />
+        <h1 className="gradient-text" style={{ margin: 0 }}>GLOBAL MATCH OVERVIEW</h1>
+      </div>
+
+      {loading ? (
+        <p className="text-dim">Scanning match protocols...</p>
+      ) : matches.length === 0 ? (
+        <div style={{
+          padding: '80px',
+          textAlign: 'center',
+          border: '1px dashed var(--glass-border)',
+          borderRadius: '20px',
+          background: 'rgba(255,255,255,0.01)'
+        }}>
+          <CalendarClock size={48} color="var(--text-dim)" style={{ opacity: 0.5, marginBottom: '20px' }} />
+          <h3 style={{ color: '#fff', margin: '0 0 8px 0' }}>NO ACTIVE PROTOCOLS</h3>
+          <p className="text-dim">All arenas are currently silent. Schedule a match in Tournaments.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gap: '16px' }}>
+          {matches.map(match => (
+            <div key={match.id} className="card glass-panel" style={{
+              padding: '24px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderLeft: `4px solid ${getStatusColor(match.status)}`
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <span style={{
+                    fontSize: '10px', fontWeight: '800',
+                    background: getStatusColor(match.status), color: '#000',
+                    padding: '4px 8px', borderRadius: '4px'
+                  }}>
+                    {match.status.toUpperCase()}
+                  </span>
+                  <span className="text-dim" style={{ fontSize: '12px', letterSpacing: '1px' }}>
+                    {match.tournament_title.toUpperCase()}
+                  </span>
+                </div>
+                <h3 style={{ margin: '0 0 4px 0', color: '#fff', fontSize: '1.2rem' }}>
+                  ROOM: {match.room_id} // MAP: {match.map_name}
+                </h3>
+                <p className="text-dim" style={{ fontSize: '12px', margin: 0 }}>
+                  Scheduled: {new Date(match.scheduled_at).toLocaleString()}
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  className="btn-primary"
+                  style={{
+                    padding: '8px 16px', fontSize: '12px',
+                    background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)'
+                  }}
+                  onClick={() => setSelectedLiveMatch(match)}
+                >
+                  OPEN CASTER DASHBOARD
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const App = () => {
+  const [token, setToken] = useState(localStorage.getItem('token'));
+
+  if (!token) {
+    return <AdminLogin onLoginSuccess={setToken} />;
+  }
+
+  return (
+    <Router>
+      <div style={{ display: 'flex', minHeight: '100vh' }}>
+        <nav className="sidebar">
+          <div className="sidebar-logo gradient-text">QUADRA<br /><span style={{ fontSize: '0.8rem', letterSpacing: '6px', color: 'var(--text-dim)' }}>ADMIN</span></div>
+
+          <NavLink to="/" icon={LayoutDashboard} label="Overview" />
+          <NavLink to="/verification" icon={CheckCircle} label="Verification Bureau" />
+          <NavLink to="/tournaments" icon={Trophy} label="Tournaments" />
+          <NavLink to="/matches" icon={Flag} label="Matches" />
+          <NavLink to="/squads" icon={ShieldAlert} label="Squads" /> {/* New Link */}
+          <NavLink to="/players" icon={Users} label="Players" />
+          <NavLink to="/seasons" icon={CalendarClock} label="Seasons" />
+          <NavLink to="/comms" icon={ShieldAlert} label="Comms" />
+
+          <button
+            onClick={() => {
+              localStorage.removeItem('token');
+              window.location.reload();
+            }}
+            style={{
+              marginTop: 'auto',
+              background: 'rgba(255, 68, 68, 0.1)',
+              color: '#ff4444',
+              border: '1px solid rgba(255, 68, 68, 0.2)',
+              padding: '16px',
+              borderRadius: '16px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '12px',
+              fontWeight: '600'
+            }}
+          >
+            <X size={18} /> TERMINATE SESSION
+          </button>
+        </nav>
+        <main className="main-content" style={{ flex: 1 }}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/verification" element={<Verification />} />
+            <Route path="/tournaments" element={<TournamentManagement />} />
+            <Route path="/matches" element={<GlobalMatchManagement />} />
+            <Route path="/squads" element={<SquadManagement />} /> {/* New Route */}
+            <Route path="/players" element={<PlayerManagement />} />
+            <Route path="/seasons" element={<SeasonControl />} />
+            <Route path="/comms" element={<Broadcast />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
+  );
+};
+
+const GlobalMatchManagement = () => {
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showResultsModal, setShowResultsModal] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [teams, setTeams] = useState([]);
+  const [results, setResults] = useState([]);
+  const [scoringParams, setScoringParams] = useState(null);
+
+  useEffect(() => {
+    fetchMatches();
+  }, []);
+
+  const fetchMatches = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/tournaments/matches/all`, {
+        headers: { 'x-auth-token': token }
+      });
+      setMatches(res.data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Fetch matches error:', err);
+      setLoading(false);
+    }
+  };
+
+  const openResultsModal = async (match) => {
+    try {
+      const token = localStorage.getItem('token');
+
+      // Fetch tournament details for scoring params
+      const tournamentRes = await axios.get(`${API_URL}/tournaments`, {
+        headers: { 'x-auth-token': token }
+      });
+      const tournament = tournamentRes.data.find(t => t.id === match.tournament_id);
+      setScoringParams(tournament?.scoring_params);
+
+      // Fetch registered teams for this match
+      const teamsRes = await axios.get(`${API_URL}/tournaments/${match.tournament_id}/registrations/count`, {
+        headers: { 'x-auth-token': token }
+      });
+
+      // For now, we'll fetch all registrations - ideally there should be a specific endpoint
+      // This is a workaround
+      const registrationsRes = await axios.get(`${API_URL}/tournaments`, {
+        headers: { 'x-auth-token': token }
+      });
+
+      // Initialize results array with empty data
+      const initialResults = [];
+      for (let i = 1; i <= 12; i++) {
+        initialResults.push({
+          team_id: null,
+          team_name: `Team ${i}`,
+          placement: i,
+          kills: 0
+        });
+      }
+
+      setResults(initialResults);
+      setSelectedMatch(match);
+      setShowResultsModal(true);
+    } catch (err) {
+      console.error('Error opening results modal:', err);
+      alert('Failed to load match details');
+    }
+  };
+
+  const calculatePoints = (placement, kills) => {
+    if (!scoringParams) return 0;
+    const placementPoints = scoringParams.placement_points?.[placement.toString()] || 0;
+    const killPoints = (kills || 0) * (scoringParams.kill_points || 1);
+    return placementPoints + killPoints;
+  };
+
+  const updateResult = (index, field, value) => {
+    const newResults = [...results];
+    newResults[index][field] = value;
+    setResults(newResults);
+  };
+
+  const submitResults = async () => {
+    try {
+      const token = localStorage.getItem('token');
+
+      // Filter out teams with no team_id (empty slots)
+      width: '900px', maxHeight: '90vh', overflow: 'auto',
+        padding: '40px', backgroundColor: '#0D0D0F'
+    }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
+              <div>
+                <h3 className="gradient-text" style={{ fontSize: '1.5rem', marginBottom: '8px' }}>
+                  SUBMIT MATCH RESULTS
+                </h3>
+                <p className="text-dim">{selectedMatch?.tournament_title} - Round {selectedMatch?.round_number}</p>
+              </div>
+              <X color="var(--text-dim)" style={{ cursor: 'pointer' }} onClick={() => setShowResultsModal(false)} />
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <p className="text-dim" style={{ fontSize: '12px' }}>
+                Enter team placements and kills. Points will be calculated automatically.
+              </p>
+            </div>
+
+            <div style={{ display: 'grid', gap: '16px', marginBottom: '32px' }}>
+              {results.map((result, index) => (
+                <div key={index} style={{
+                  display: 'grid',
+                  gridTemplateColumns: '60px 2fr 1fr 1fr 1fr',
+                  gap: '16px',
+                  alignItems: 'center',
+                  padding: '16px',
+                  backgroundColor: 'rgba(255,255,255,0.02)',
+                  borderRadius: '12px'
+                }}>
+                  <div style={{ color: 'var(--primary)', fontWeight: '800', fontSize: '18px' }}>
+                    #{result.placement}
+                  </div>
+                  <input
+                    placeholder="Team Name or ID"
+                    value={result.team_name}
+                    onChange={(e) => updateResult(index, 'team_name', e.target.value)}
+                    style={{ width: '100%' }}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Team ID"
+                    value={result.team_id || ''}
+                    onChange={(e) => updateResult(index, 'team_id', e.target.value)}
+                    style={{ width: '100%' }}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Kills"
+                    value={result.kills}
+                    onChange={(e) => updateResult(index, 'kills', e.target.value)}
+                    style={{ width: '100%' }}
+                  />
+                  <div style={{
+                    color: 'var(--primary)',
+                    fontWeight: '700',
+                    textAlign: 'center',
+                    fontSize: '16px'
+                  }}>
+                    {calculatePoints(result.placement, result.kills)} PTS
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <button
+                onClick={submitResults}
+                className="btn-primary"
+                style={{ flex: 2, padding: '16px', fontSize: '16px' }}
+              >
+                SUBMIT RESULTS
+              </button>
+              <button
+                onClick={() => setShowResultsModal(false)}
+                style={{
+                  flex: 1, padding: '16px', background: 'transparent',
+                  color: '#fff', border: '1px solid var(--glass-border)',
+                  borderRadius: '12px', cursor: 'pointer'
+                }}
+              >
+                CANCEL
+              </button>
+            </div>
+          </div >
+        </div >
+      )}
+    </div >
+  );
+};
+
+const Broadcast = () => {
+  const [targetType, setTargetType] = useState('global');
+  const [targetId, setTargetId] = useState('');
+  const [type, setType] = useState('system');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState([]);
+
+  const handleBroadcast = async () => {
+    if (!message.trim()) return alert('Message content required.');
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/users/broadcast`, {
+        targetType,
+        targetId: targetId || null,
+        type,
+        message
+      }, { headers: { 'x-auth-token': token } });
+
+      setHistory([{ targetType, type, message, date: new Date() }, ...history]);
+      setMessage('');
+      alert('Broadcast dispatched successfully!');
+    } catch (err) {
+      alert('Broadcast Failed: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="card glass-panel" style={{ animation: 'fadeIn 0.6s ease' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
+        <ShieldAlert color="var(--primary)" size={32} />
+        <h1 className="gradient-text" style={{ margin: 0 }}>COMMS CENTER</h1>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '32px' }}>
+        <div>
+          <div className="card glass-panel" style={{ padding: '32px', borderLeft: '4px solid var(--primary)' }}>
+            <h3 style={{ color: '#fff', marginTop: 0, marginBottom: '24px' }}>NEW TRANSMISSION</h3>
+
+            <div style={{ display: 'grid', gap: '20px' }}>
+              <div>
+                <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>TARGET AUDIENCE</label>
+                <select
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '10px' }}
+                  value={targetType}
+                  onChange={e => setTargetType(e.target.value)}
+                >
+                  <option value="global">GLOBAL (All Operatives)</option>
+                  <option value="tournament">TOURNAMENT Roster</option>
+                  <option value="user">SINGLE OPERATIVE</option>
+                </select>
+              </div>
+
+              {targetType !== 'global' && (
+                <div>
+                  <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>TARGET ID</label>
+                  <input
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.03)', color: '#fff', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '10px' }}
+                    placeholder={targetType === 'tournament' ? "Tournament ID" : "User ID"}
+                    value={targetId}
+                    onChange={e => setTargetId(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>ALERT TYPE</label>
+                <select
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid var(--glass-border)', padding: '12px', borderRadius: '10px' }}
+                  value={type}
+                  onChange={e => setType(e.target.value)}
+                >
+                  <option value="system">SYSTEM ALERT (Red)</option>
+                  <option value="match">MATCH UPDATE (Green)</option>
+                  <option value="achievement">ACHIEVEMENT (Gold)</option>
+                  <option value="social">SOCIAL (Blue)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-dim" style={{ fontSize: '10px', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>MESSAGE PAYLOAD</label>
+                <textarea
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.03)', color: '#fff', border: '1px solid var(--glass-border)', padding: '16px', borderRadius: '10px', minHeight: '150px' }}
+                  placeholder="Enter strategic communication..."
+                  value={message}
+                  onChange={e => setMessage(e.target.value)}
+                />
+              </div>
+
+              <button
+                onClick={handleBroadcast}
+                disabled={loading}
+                className="btn-primary"
+                style={{ width: '100%', padding: '16px', fontSize: '16px', marginTop: '16px' }}
+              >
+                {loading ? 'DIPLOMATIC HANDSHAKE...' : 'DISPATCH TRANSMISSION'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 style={{ color: '#fff', fontSize: '1.2rem' }}>TRANSMISSION LOG</h3>
+          <div style={{ display: 'grid', gap: '16px', marginTop: '20px' }}>
+            {history.length === 0 ? (
+              <p className="text-dim">No recent broadcasts recorded in this session.</p>
+            ) : history.map((h, idx) => (
+              <div key={idx} className="card glass-panel" style={{ padding: '16px', borderLeft: '4px solid var(--glass-border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--primary)' }}>{h.type.toUpperCase()}</span>
+                  <span className="text-dim" style={{ fontSize: '10px' }}>{h.date.toLocaleTimeString()}</span>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: '#fff' }}>{h.message}</p>
+                <div style={{ marginTop: '8px', fontSize: '10px', color: 'var(--text-dim)' }}>
+                  TARGET: {h.targetType.toUpperCase()}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
