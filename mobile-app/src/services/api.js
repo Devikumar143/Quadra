@@ -1,0 +1,65 @@
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const LOCAL_URL = 'http://10.188.11.250:5001/api';
+const PROD_URL = 'https://quadra-production.up.railway.app/api';
+
+export const API_URL = __DEV__ ? LOCAL_URL : PROD_URL;
+
+const api = axios.create({
+    baseURL: API_URL,
+    timeout: 10000, // 10 seconds timeout
+});
+
+export const refreshAuthToken = async () => {
+    try {
+        const refreshToken = await AsyncStorage.getItem('refreshToken');
+        if (!refreshToken) throw new Error('No refresh token');
+
+        const res = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+        const { token: newToken, refreshToken: newRefreshToken } = res.data;
+
+        await AsyncStorage.setItem('token', newToken);
+        await AsyncStorage.setItem('refreshToken', newRefreshToken);
+
+        api.defaults.headers.common['x-auth-token'] = newToken;
+        return newToken;
+    } catch (error) {
+        await AsyncStorage.removeItem('token');
+        await AsyncStorage.removeItem('refreshToken');
+        throw error;
+    }
+};
+
+api.interceptors.request.use(
+    async (config) => {
+        const token = await AsyncStorage.getItem('token');
+        if (token) {
+            config.headers['x-auth-token'] = token;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            try {
+                const newToken = await refreshAuthToken();
+                originalRequest.headers['x-auth-token'] = newToken;
+                return api(originalRequest);
+            } catch (refreshError) {
+                // Token refresh failed, user needs to login
+                return Promise.reject(refreshError);
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
+export default api;
