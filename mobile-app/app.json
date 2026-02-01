@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile-app",
-    "slug": "quadra-",
+    "name": "Quadra",
+    "slug": "quadra",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
