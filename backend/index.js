@@ -16,9 +16,8 @@ const io = require('socket.io')(server, {
 const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(express.json());
 app.use(cors({
-    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : "*"
+    origin: "*"
 }));
 app.use(helmet({
     contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
