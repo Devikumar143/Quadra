@@ -159,32 +159,21 @@ export default function App() {
     // Notifications handled via Real-time Uplink (Socket.io)
     // Removed legacy 30s polling
 
-    // Safety timeout
     useEffect(() => {
-        const timer = setTimeout(async () => {
-            if (!fontsLoaded) {
+        const prepare = async () => {
+            if (fontsLoaded && appReady) {
                 await SplashScreen.hideAsync();
             }
-        }, 5000);
-        return () => clearTimeout(timer);
-    }, [fontsLoaded]);
-
-    const onLayoutRootView = useCallback(async () => {
-        if (fontsLoaded && appReady) {
-            await SplashScreen.hideAsync();
-        }
+        };
+        prepare();
     }, [fontsLoaded, appReady]);
 
     if (!fontsLoaded || !appReady) {
-        return (
-            <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator color={COLORS.primary} />
-            </View>
-        );
-    };
+        return null;
+    }
 
     return (
-        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        <View style={{ flex: 1 }}>
             <StatusBar barStyle="light-content" />
             {screen === 'login' ? (
                 <LoginScreen onLoginSuccess={handleLoginSuccess} onSwitchToRegister={() => setScreen('register')} styles={styles} />
