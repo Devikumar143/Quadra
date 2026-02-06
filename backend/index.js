@@ -22,6 +22,13 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Debug logging for production requests
+app.use((req, res, next) => {
+    console.log(`[PROD-LOG] ${req.method} ${req.url}`);
+    next();
+});
+
+
 app.use(helmet({
     contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
 }));
