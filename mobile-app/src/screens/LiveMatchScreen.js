@@ -6,9 +6,7 @@ import { ChevronLeft, Trophy, Activity, Target, TrendingUp, Users, ShieldAlert }
 import io from 'socket.io-client';
 import { refreshAuthToken } from '../services/api';
 import { COLORS } from '../constants/theme';
-import api from '../services/api';
-
-const SOCKET_URL = 'http://10.188.11.250:5001';
+import api, { SOCKET_URL } from '../services/api';
 
 const LiveMatchScreen = ({ navigation }) => {
     const [matches, setMatches] = useState([]);

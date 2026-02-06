@@ -6,7 +6,7 @@ import io from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LineChart } from 'react-native-chart-kit';
 import { COLORS } from '../constants/theme';
-import api from '../services/api';
+import api, { SOCKET_URL } from '../services/api';
 import { TacticalModal } from '../components/Shared';
 
 const SquadsScreen = ({ user, token, onOpenRecruitment, styles }) => {
@@ -150,7 +150,7 @@ const SquadsScreen = ({ user, token, onOpenRecruitment, styles }) => {
     }, []);
 
     const initializeSocket = async (teamId) => {
-        const SOCKET_URL = 'http://10.188.11.250:5001';
+
         const stoken = await AsyncStorage.getItem('token');
 
         const socket = io(SOCKET_URL, {

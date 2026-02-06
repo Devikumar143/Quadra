@@ -1,15 +1,19 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const LOCAL_URL = 'http://10.188.11.250:5001/api';
-const PROD_URL = 'https://quadra-production.up.railway.app/api';
+const LOCAL_IP = '10.185.110.250';
+const LOCAL_URL = `http://${LOCAL_IP}:5001/api`;
+const PROD_URL = 'https://quadra-production.railway.app/api';
 
-export const API_URL = __DEV__ ? LOCAL_URL : PROD_URL;
+// Forcing PROD_URL for 5G testing. Switch back to __DEV__ ? ... for local dev.
+export const API_URL = PROD_URL;
+export const SOCKET_URL = 'https://quadra-production.railway.app';
 
 const api = axios.create({
     baseURL: API_URL,
-    timeout: 10000, // 10 seconds timeout
+    timeout: 30000, // 30 seconds timeout for production/cold starts
 });
+
 
 export const refreshAuthToken = async () => {
     try {

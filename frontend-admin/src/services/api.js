@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const LOCAL_URL = 'http://localhost:5001/api';
-const PROD_URL = 'https://quadra-production.up.railway.app/api';
+const PROD_URL = 'https://quadra-production.railway.app/api';
 
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? PROD_URL : LOCAL_URL);
 

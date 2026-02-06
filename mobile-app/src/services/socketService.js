@@ -1,8 +1,6 @@
 import io from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { refreshAuthToken } from './api';
-
-const SOCKET_URL = 'http://10.188.11.250:5001'; // Update with your actual backend IP
+import { refreshAuthToken, SOCKET_URL } from './api';
 
 class SocketService {
     constructor() {

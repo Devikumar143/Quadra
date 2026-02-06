@@ -19,6 +19,9 @@ const PORT = process.env.PORT || 5001;
 app.use(cors({
     origin: "*"
 }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(helmet({
     contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
 }));
