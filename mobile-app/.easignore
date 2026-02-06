@@ -1,0 +1,9 @@
+# EAS Ignore
+node_modules
+.expo
+android
+ios
+.gitignore
+*.log
+*.zip
+*.tar.gz

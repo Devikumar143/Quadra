@@ -4,7 +4,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Users Table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     full_name VARCHAR(255) NOT NULL,
     university_id VARCHAR(50) UNIQUE NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE users (
 );
 
 -- Teams Table
-CREATE TABLE teams (
+CREATE TABLE IF NOT EXISTS teams (
     id BIGINT PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL,
     leader_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -36,7 +36,7 @@ CREATE TABLE teams (
 );
 
 -- Team Members Table (Squad of 4 + 1 sub)
-CREATE TABLE team_members (
+CREATE TABLE IF NOT EXISTS team_members (
     team_id BIGINT REFERENCES teams(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     role VARCHAR(20) DEFAULT 'member', -- 'leader', 'member', 'substitute'
@@ -45,7 +45,7 @@ CREATE TABLE team_members (
 );
 
 -- Tournaments Table
-CREATE TABLE tournaments (
+CREATE TABLE IF NOT EXISTS tournaments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(255) NOT NULL,
     description TEXT,
@@ -58,7 +58,7 @@ CREATE TABLE tournaments (
 );
 
 -- Registrations Table (Teams in Tournaments)
-CREATE TABLE registrations (
+CREATE TABLE IF NOT EXISTS registrations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tournament_id UUID REFERENCES tournaments(id) ON DELETE CASCADE,
     team_id BIGINT REFERENCES teams(id) ON DELETE CASCADE,
@@ -69,7 +69,7 @@ CREATE TABLE registrations (
 );
 
 -- Matches Table
-CREATE TABLE matches (
+CREATE TABLE IF NOT EXISTS matches (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tournament_id UUID REFERENCES tournaments(id) ON DELETE CASCADE,
     room_id VARCHAR(50),
@@ -82,7 +82,7 @@ CREATE TABLE matches (
 );
 
 -- Match Results Table
-CREATE TABLE match_results (
+CREATE TABLE IF NOT EXISTS match_results (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     match_id UUID REFERENCES matches(id) ON DELETE CASCADE,
     team_id BIGINT REFERENCES teams(id) ON DELETE CASCADE,
@@ -96,7 +96,7 @@ CREATE TABLE match_results (
 );
 
 -- Moderation Logs
-CREATE TABLE moderation_logs (
+CREATE TABLE IF NOT EXISTS moderation_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     target_user_id UUID REFERENCES users(id),
     admin_id UUID REFERENCES users(id),
@@ -107,7 +107,7 @@ CREATE TABLE moderation_logs (
 );
 
 -- Disputes Table
-CREATE TABLE disputes (
+CREATE TABLE IF NOT EXISTS disputes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     result_id UUID REFERENCES match_results(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -119,7 +119,7 @@ CREATE TABLE disputes (
 );
 
 -- Notifications Table
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     type VARCHAR(50) NOT NULL,
@@ -129,14 +129,14 @@ CREATE TABLE notifications (
 );
 
 -- Announcements Table (Live Feed)
-CREATE TABLE announcements (
+CREATE TABLE IF NOT EXISTS announcements (
     id SERIAL PRIMARY KEY,
     content TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Squad Messages Table
-CREATE TABLE squad_messages (
+CREATE TABLE IF NOT EXISTS squad_messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     team_id BIGINT REFERENCES teams(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -146,7 +146,7 @@ CREATE TABLE squad_messages (
 );
 
 -- Refresh Tokens Table (Security Hardening)
-CREATE TABLE refresh_tokens (
+CREATE TABLE IF NOT EXISTS refresh_tokens (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     token TEXT UNIQUE NOT NULL,
@@ -155,7 +155,7 @@ CREATE TABLE refresh_tokens (
 );
 
 -- Achievements Table
-CREATE TABLE achievements (
+CREATE TABLE IF NOT EXISTS achievements (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(100) NOT NULL,
     description TEXT NOT NULL,
@@ -168,7 +168,7 @@ CREATE TABLE achievements (
 );
 
 -- User Achievements Table
-CREATE TABLE user_achievements (
+CREATE TABLE IF NOT EXISTS user_achievements (
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     achievement_id UUID REFERENCES achievements(id) ON DELETE CASCADE,
     unlocked_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -176,9 +176,9 @@ CREATE TABLE user_achievements (
 );
 
 -- Indices for performance
-CREATE INDEX idx_users_university_id ON users(university_id);
-CREATE INDEX idx_users_ff_uid ON users(ff_uid);
-CREATE INDEX idx_registrations_tournament ON registrations(tournament_id);
-CREATE INDEX idx_match_results_match ON match_results(match_id);
-CREATE INDEX idx_squad_messages_team ON squad_messages(team_id);
-CREATE INDEX idx_notifications_user ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_users_university_id ON users(university_id);
+CREATE INDEX IF NOT EXISTS idx_users_ff_uid ON users(ff_uid);
+CREATE INDEX IF NOT EXISTS idx_registrations_tournament ON registrations(tournament_id);
+CREATE INDEX IF NOT EXISTS idx_match_results_match ON match_results(match_id);
+CREATE INDEX IF NOT EXISTS idx_squad_messages_team ON squad_messages(team_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
