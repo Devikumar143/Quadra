@@ -89,8 +89,7 @@ app.use((err, req, res, next) => {
     console.error(`[SYSTEM ERROR] ${err.stack}`);
     res.status(500).json({
         message: "Internal Tactical Failure.",
-        error: err.message,
-        stack: err.stack
+        error: process.env.NODE_ENV === 'production' ? {} : err.message
     });
 });
 

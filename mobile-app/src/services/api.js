@@ -5,8 +5,7 @@ const LOCAL_IP = '10.185.110.250';
 const LOCAL_URL = `http://${LOCAL_IP}:5001/api`;
 const PROD_URL = 'https://quadra-production.up.railway.app/api';
 
-// Forcing PROD_URL for 5G testing. Switch back to __DEV__ ? ... for local dev.
-export const API_URL = PROD_URL;
+export const API_URL = __DEV__ ? LOCAL_URL : PROD_URL;
 export const SOCKET_URL = 'https://quadra-production.up.railway.app';
 
 const api = axios.create({
